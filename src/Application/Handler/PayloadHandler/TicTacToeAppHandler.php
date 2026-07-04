@@ -47,8 +47,8 @@ final class TicTacToeAppHandler implements TypedHandlerInterface
   .ttt__title { font-weight: 700; font-size: 17px; letter-spacing: .01em; }
   .ttt__title small { color: var(--muted); font-weight: 500; font-size: 12px; }
   .ttt__status { min-height: 22px; font-size: 14px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
-  .ttt__status.win { color: #34d399; font-weight: 600; }
-  .ttt__status.lose { color: #ff6b82; font-weight: 600; }
+  .ttt__status.win { color: var(--win); font-weight: 600; }
+  .ttt__status.lose { color: var(--lose); font-weight: 600; }
   .ttt__status.draw { color: var(--text); font-weight: 600; }
   .ttt__say { color: var(--accent); }
   .ttt__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
@@ -78,7 +78,31 @@ final class TicTacToeAppHandler implements TypedHandlerInterface
   .dots i:nth-child(2) { animation-delay: .15s; }
   .dots i:nth-child(3) { animation-delay: .3s; }
   @keyframes b { 0%,100%{opacity:.25;transform:translateY(0)} 50%{opacity:1;transform:translateY(-2px)} }
-</style></head>
+  :root{--win:#34d399;--lose:#ff6b82}
+  :root[data-mode=light]{color-scheme:light;--text:#1d2a38;--muted:#55677e;--page:#f4f7fb;--panel:#ffffff;
+    --line:rgba(100,116,139,.28);--accent:#7c5cd6;--accent-soft:rgba(124,92,214,.14);--x:#1e7fb8;--o:#7c5cd6;--win:#0e8a72;--lose:#c2314b}
+</style><script>
+/* Follow the OS theme: pref lives server-side; 'auto' resolves with the shell's
+   exact rule (prefers-color-scheme, else dark 19:00-07:00). Self-resolution
+   works in web iframes AND OS-mode native windows. */
+(function(){
+  function applyMode(mode){
+    var eff=(mode==='light'||mode==='dark')?mode:(function(){
+      try{ if(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark'; }catch(e){}
+      var h=new Date().getHours(); return (h>=19||h<7)?'dark':'light';
+    })();
+    var el=document.documentElement;
+    if(el.getAttribute('data-mode')!==eff){ el.setAttribute('data-mode',eff); el.style.colorScheme=eff; }
+  }
+  function syncMode(){
+    fetch('/os/preferences',{headers:{'Accept':'application/json'}})
+      .then(function(r){return r.json();}).then(function(d){ applyMode((d&&d.theme_mode)||'auto'); })
+      .catch(function(){});
+  }
+  syncMode(); window.addEventListener('focus', syncMode); setInterval(syncMode, 15000);
+})();
+</script>
+</head>
 <body>
   <div class="ttt">
     <div class="ttt__head">
