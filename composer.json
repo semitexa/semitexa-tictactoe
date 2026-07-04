@@ -1,0 +1,36 @@
+{
+    "name": "semitexa/tictactoe",
+    "description": "Semitexa OS tic-tac-toe: a UI-skill game you play against Semi (every move is a real LLM call)",
+    "type": "semitexa-module",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Semitexa",
+            "email": "support@semitexa.com"
+        }
+    ],
+    "require": {
+        "php": "^8.4",
+        "semitexa/core": "*",
+        "semitexa/llm": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Semitexa\\TicTacToe\\": "src/"
+        }
+    },
+    "extra": {
+        "semitexa-module": {
+            "name": "tictactoe",
+            "description": "Tic-tac-toe game (UI-skill) played against Semi via the LLM"
+        }
+    },
+    "version": "0.0.1",
+    "keywords": [
+        "semitexa",
+        "os",
+        "game",
+        "tic-tac-toe",
+        "llm"
+    ]
+}
