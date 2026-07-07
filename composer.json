@@ -25,7 +25,6 @@
             "description": "Tic-tac-toe game (UI-skill) played against Semi via the LLM"
         }
     },
-    "version": "0.0.1",
     "keywords": [
         "semitexa",
         "os",
