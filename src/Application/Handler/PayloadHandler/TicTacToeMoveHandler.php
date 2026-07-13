@@ -15,7 +15,7 @@ use Semitexa\Prompt\Application\Service\PromptRegistry;
 use Semitexa\Prompt\Application\Service\PromptRenderer;
 use Semitexa\Prompt\Domain\Model\PromptTemplate;
 use Semitexa\TicTacToe\Application\Payload\Request\TicTacToeMovePayload;
-use Semitexa\TicTacToe\Application\Service\Prompt\TicTacToeOpponentPrompt;
+use Semitexa\TicTacToe\Application\Prompt\TicTacToeOpponentPrompt;
 
 /**
  * Semi's move. The board is sent to the LLM with a focused system prompt asking

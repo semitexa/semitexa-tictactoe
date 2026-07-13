@@ -7,7 +7,7 @@ namespace Semitexa\TicTacToe\Tests\Unit\Prompt;
 use PHPUnit\Framework\TestCase;
 use Semitexa\Prompt\Application\Service\PromptRegistry;
 use Semitexa\Prompt\Application\Service\PromptRenderer;
-use Semitexa\TicTacToe\Application\Service\Prompt\TicTacToeOpponentPrompt;
+use Semitexa\TicTacToe\Application\Prompt\TicTacToeOpponentPrompt;
 
 final class TicTacToeOpponentPromptTest extends TestCase
 {
@@ -26,7 +26,8 @@ final class TicTacToeOpponentPromptTest extends TestCase
         {"move": <index of an EMPTY cell you chose>, "say": "<a short, friendly ≤6-word quip>"}
         PROMPT;
 
-        self::assertSame($expected, (new TicTacToeOpponentPrompt())->system());
+        $template = (new PromptRegistry())->buildFromClasses([TicTacToeOpponentPrompt::class])['tictactoe.opponent'];
+        self::assertSame($expected, (new PromptRenderer())->renderTemplate($template)->system);
     }
 
     public function testRendersWithNoVariablesAndOnTheTictactoeChannel(): void
