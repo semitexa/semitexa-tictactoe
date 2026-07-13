@@ -13,6 +13,7 @@ use Semitexa\Prompt\Attribute\AsPrompt;
 #[AsPrompt(
     id: self::ID,
     channel: 'tictactoe',
+    template: 'tictactoe.opponent.twig',
     description: 'Semi playing tic-tac-toe as O; replies with a JSON move + short quip.',
 )]
 final class TicTacToeOpponentPrompt
