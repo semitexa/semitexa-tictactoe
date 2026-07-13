@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Semitexa\TicTacToe\Application\Prompt;
 
 use Semitexa\Prompt\Attribute\AsPrompt;
+use Semitexa\Prompt\Domain\Contract\BoundPromptInterface;
 
 /**
- * Semi's tic-tac-toe opponent system prompt. Thin definition — the body lives in
- * `resources/prompts/tictactoe.opponent.twig`.
+ * Thin, self-binding prompt — body in resources/prompts/tictactoe.opponent.twig.
  */
 #[AsPrompt(
     id: self::ID,
@@ -16,7 +16,12 @@ use Semitexa\Prompt\Attribute\AsPrompt;
     template: 'resources/prompts/tictactoe.opponent.twig',
     description: 'Semi playing tic-tac-toe as O; replies with a JSON move + short quip.',
 )]
-final class TicTacToeOpponentPrompt
+final class TicTacToeOpponentPrompt implements BoundPromptInterface
 {
     public const ID = 'tictactoe.opponent';
+
+    public function promptId(): string
+    {
+        return self::ID;
+    }
 }

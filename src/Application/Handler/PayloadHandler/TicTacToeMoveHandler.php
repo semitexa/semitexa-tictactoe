@@ -11,9 +11,7 @@ use Semitexa\Core\Http\Response\ResourceResponse;
 use Semitexa\Llm\Application\Service\LlmProviderResolver;
 use Semitexa\Llm\Application\Service\Planner;
 use Semitexa\Llm\Domain\Model\LlmRequest;
-use Semitexa\Prompt\Application\Service\PromptRegistry;
 use Semitexa\Prompt\Application\Service\PromptRenderer;
-use Semitexa\Prompt\Domain\Model\PromptTemplate;
 use Semitexa\TicTacToe\Application\Payload\Request\TicTacToeMovePayload;
 use Semitexa\TicTacToe\Application\Prompt\TicTacToeOpponentPrompt;
 
@@ -109,15 +107,10 @@ final class TicTacToeMoveHandler implements TypedHandlerInterface
     }
 
     private ?PromptRenderer $renderer = null;
-    private ?PromptTemplate $opponentTemplate = null;
 
     private function systemPrompt(): string
     {
-        $this->renderer ??= new PromptRenderer();
-        $this->opponentTemplate ??= (new PromptRegistry())
-            ->buildFromClasses([TicTacToeOpponentPrompt::class])[TicTacToeOpponentPrompt::ID];
-
-        return $this->renderer->renderTemplate($this->opponentTemplate)->system;
+        return ($this->renderer ??= new PromptRenderer())->render(new TicTacToeOpponentPrompt())->system;
     }
 
     /**
