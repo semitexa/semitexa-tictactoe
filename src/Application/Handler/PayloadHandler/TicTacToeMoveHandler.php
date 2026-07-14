@@ -11,7 +11,9 @@ use Semitexa\Core\Http\Response\ResourceResponse;
 use Semitexa\Llm\Application\Service\LlmProviderResolver;
 use Semitexa\Llm\Application\Service\Planner;
 use Semitexa\Llm\Domain\Model\LlmRequest;
+use Semitexa\Prompt\Application\Service\PromptRenderer;
 use Semitexa\TicTacToe\Application\Payload\Request\TicTacToeMovePayload;
+use Semitexa\TicTacToe\Application\Prompt\TicTacToeOpponentPrompt;
 
 /**
  * Semi's move. The board is sent to the LLM with a focused system prompt asking
@@ -104,20 +106,14 @@ final class TicTacToeMoveHandler implements TypedHandlerInterface
         return [$legal[0], '', true];
     }
 
+    private ?string $systemPrompt = null;
+
     private function systemPrompt(): string
     {
-        return <<<'PROMPT'
-        You are Semi, playing tic-tac-toe against a human. You are O; the human is X.
-        The board is 9 cells, indices 0-8, laid out:
-         0 | 1 | 2
-         3 | 4 | 5
-         6 | 7 | 8
-        You will be given the current cells (values "X", "O" or "" for empty) and the
-        list of empty indices you may play. Choose the best move for O: win if you can,
-        otherwise block X, otherwise take the strongest square.
-        Reply with ONLY JSON, no prose, no code fences:
-        {"move": <index of an EMPTY cell you chose>, "say": "<a short, friendly ≤6-word quip>"}
-        PROMPT;
+        // The opponent prompt has no variables — its text is constant. Render it
+        // once and reuse across the (up to two) retry attempts per request rather
+        // than re-rendering the same template each time.
+        return $this->systemPrompt ??= (new PromptRenderer())->render(new TicTacToeOpponentPrompt())->system;
     }
 
     /**

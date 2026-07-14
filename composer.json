@@ -12,7 +12,8 @@
     "require": {
         "php": "^8.4",
         "semitexa/core": "*",
-        "semitexa/llm": "*"
+        "semitexa/llm": "*",
+        "semitexa/prompt": "*"
     },
     "autoload": {
         "psr-4": {
