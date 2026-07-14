@@ -106,11 +106,14 @@ final class TicTacToeMoveHandler implements TypedHandlerInterface
         return [$legal[0], '', true];
     }
 
-    private ?PromptRenderer $renderer = null;
+    private ?string $systemPrompt = null;
 
     private function systemPrompt(): string
     {
-        return ($this->renderer ??= new PromptRenderer())->render(new TicTacToeOpponentPrompt())->system;
+        // The opponent prompt has no variables — its text is constant. Render it
+        // once and reuse across the (up to two) retry attempts per request rather
+        // than re-rendering the same template each time.
+        return $this->systemPrompt ??= (new PromptRenderer())->render(new TicTacToeOpponentPrompt())->system;
     }
 
     /**

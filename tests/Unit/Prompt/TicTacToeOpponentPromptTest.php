@@ -26,8 +26,9 @@ final class TicTacToeOpponentPromptTest extends TestCase
         {"move": <index of an EMPTY cell you chose>, "say": "<a short, friendly ≤6-word quip>"}
         PROMPT;
 
-        $template = (new PromptRegistry())->buildFromClasses([TicTacToeOpponentPrompt::class])['tictactoe.opponent'];
-        self::assertSame($expected, (new PromptRenderer())->renderTemplate($template)->system);
+        // Render through the exact production path — a bound object passed to
+        // render() — so this guards bound-object rendering, not just renderTemplate().
+        self::assertSame($expected, (new PromptRenderer())->render(new TicTacToeOpponentPrompt())->system);
     }
 
     public function testRendersWithNoVariablesAndOnTheTictactoeChannel(): void
