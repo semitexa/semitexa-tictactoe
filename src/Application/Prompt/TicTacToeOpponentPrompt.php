@@ -14,7 +14,7 @@ use Semitexa\Prompt\Domain\Contract\BoundPromptInterface;
     id: self::ID,
     channel: 'tictactoe',
     template: 'resources/prompts/tictactoe.opponent.twig',
-    description: 'Semi playing tic-tac-toe as O; replies with a JSON move + short quip.',
+    description: 'The OS assistant playing tic-tac-toe as O; replies with a JSON move + short quip.',
 )]
 final class TicTacToeOpponentPrompt implements BoundPromptInterface
 {

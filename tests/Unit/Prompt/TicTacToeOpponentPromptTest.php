@@ -11,10 +11,15 @@ use Semitexa\TicTacToe\Application\Prompt\TicTacToeOpponentPrompt;
 
 final class TicTacToeOpponentPromptTest extends TestCase
 {
-    public function testIsByteIdenticalToTheLegacyInlineNowdoc(): void
+    /**
+     * The template file is the whole prompt — nothing binds into it — so an
+     * accidental edit is invisible until a model behaves oddly. This pins it.
+     */
+    public function testIsByteIdenticalToTheShippedTemplate(): void
     {
         $expected = <<<'PROMPT'
-        You are Semi, playing tic-tac-toe against a human. You are O; the human is X.
+        You are the assistant of Semitexa OS, playing tic-tac-toe against a human. You are O; the human is X.
+        Do not name yourself in the quip — the operator may have renamed you and the page shows your real name around it.
         The board is 9 cells, indices 0-8, laid out:
          0 | 1 | 2
          3 | 4 | 5
@@ -39,7 +44,8 @@ final class TicTacToeOpponentPromptTest extends TestCase
         self::assertSame('tictactoe', $template->channel);
 
         $rendered = (new PromptRenderer())->renderTemplate($template);
-        self::assertStringContainsString('You are Semi, playing tic-tac-toe', $rendered->system);
+        self::assertStringContainsString('playing tic-tac-toe against a human', $rendered->system);
+        self::assertStringNotContainsString('Semi,', $rendered->system);
         self::assertStringNotContainsString('{{', $rendered->system);
     }
 }

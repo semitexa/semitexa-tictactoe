@@ -9,8 +9,8 @@ use Semitexa\Core\Contract\ValidatablePayloadInterface;
 use Semitexa\Core\Http\Response\ResourceResponse;
 
 /**
- * Ask Semi (the LLM) for its next move. The client sends the current 9-cell
- * board; the handler runs one focused LLM completion and returns Semi's move.
+ * Ask the assistant (the LLM) for her next move. The client sends the current
+ * 9-cell board; the handler runs one focused LLM completion and returns her move.
  */
 #[AsPublicPayload(
     path: '/os/app/tictactoe/move',

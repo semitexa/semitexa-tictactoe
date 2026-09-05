@@ -16,10 +16,10 @@ use Semitexa\TicTacToe\Application\Payload\Request\TicTacToeMovePayload;
 use Semitexa\TicTacToe\Application\Prompt\TicTacToeOpponentPrompt;
 
 /**
- * Semi's move. The board is sent to the LLM with a focused system prompt asking
+ * her move. The board is sent to the LLM with a focused system prompt asking
  * for a single JSON move; this is ONE completion (the planner is bypassed on
  * purpose — one ~140s call per move, not two). The model genuinely chooses the
- * move, so you play against Semi.
+ * move, so you play against the assistant herself.
  *
  * Robustness: the returned index is validated against the live board (in range +
  * empty). On a bad/parse-failed/errored response it retries once, then falls
@@ -43,7 +43,7 @@ final class TicTacToeMoveHandler implements TypedHandlerInterface
         $board = $payload->getBoard();
         $legal = $this->legalCells($board);
 
-        // No move to make — board full or already won before Semi's turn.
+        // No move to make — board full or already won before her turn.
         if ($legal === []) {
             return $this->json($resource, [
                 'move' => null,
@@ -53,7 +53,7 @@ final class TicTacToeMoveHandler implements TypedHandlerInterface
             ]);
         }
 
-        [$move, $say, $fallback] = $this->askSemi($board, $legal);
+        [$move, $say, $fallback] = $this->askOpponent($board, $legal);
 
         $board[$move] = 'O';
 
@@ -71,7 +71,7 @@ final class TicTacToeMoveHandler implements TypedHandlerInterface
      *
      * @return array{0:int,1:string,2:bool} [move, say, fallback]
      */
-    private function askSemi(array $board, array $legal): array
+    private function askOpponent(array $board, array $legal): array
     {
         $planner = new Planner();
 
