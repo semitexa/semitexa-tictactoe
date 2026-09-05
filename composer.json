@@ -23,7 +23,7 @@
     "extra": {
         "semitexa-module": {
             "name": "tictactoe",
-            "description": "Tic-tac-toe game (UI-skill) played against Semi via the LLM"
+            "description": "Tic-tac-toe game (UI-skill) played against the OS assistant via the LLM"
         }
     },
     "keywords": [

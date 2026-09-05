@@ -11,9 +11,14 @@ use Semitexa\TicTacToe\Application\Payload\Request\TicTacToeAppPayload;
 
 /**
  * Renders the tic-tac-toe board — a self-contained dark-themed page embedded as
- * a dialog by the OS. You are X; each of Semi's (O) moves posts the board to
- * `/os/app/tictactoe/move`, which runs a real LLM completion. Tinted to the OS
- * dark palette via `--ui-*` overrides (same approach as the calendar dialog).
+ * a dialog by the OS. You are X; each of the assistant's (O) moves posts the
+ * board to `/os/app/tictactoe/move`, which runs a real LLM completion. Tinted
+ * to the OS dark palette via `--ui-*` overrides (same approach as the calendar
+ * dialog).
+ *
+ * Her name is not baked in: this package does not depend on semitexa/os, and
+ * the name is renameable anyway, so the page asks /os/preferences for it the
+ * same way it asks for the theme. Rename her and the game follows.
  */
 #[AsPayloadHandler(payload: TicTacToeAppPayload::class, resource: ResourceResponse::class)]
 final class TicTacToeAppHandler implements TypedHandlerInterface
@@ -23,7 +28,7 @@ final class TicTacToeAppHandler implements TypedHandlerInterface
         $html = <<<'HTML'
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tic-tac-toe · Semi</title>
+<title>Tic-tac-toe · Solomiia</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -106,18 +111,32 @@ final class TicTacToeAppHandler implements TypedHandlerInterface
 <body>
   <div class="ttt">
     <div class="ttt__head">
-      <div class="ttt__title">Tic-tac-toe <small>you vs Semi</small></div>
+      <div class="ttt__title">Tic-tac-toe <small>you vs <span data-aname>Solomiia</span></small></div>
     </div>
     <div class="ttt__status" id="status">Your move — you are <b style="color:var(--x);margin:0 3px">X</b></div>
     <div class="ttt__grid" id="grid"></div>
     <div class="ttt__foot">
       <button class="ttt__new" id="new">New game</button>
-      <span class="ttt__hint">Semi (O) thinks with the model — a move can take a moment.</span>
+      <span class="ttt__hint"><span data-aname>Solomiia</span> (O) thinks with the model — a move can take a moment.</span>
     </div>
   </div>
 <script>
 (function () {
   var MOVE_URL = '/os/app/tictactoe/move';
+  // The operator may have renamed her; the shell's own preferences endpoint is
+  // the only place that knows. Until it answers, the markup's fallback stands.
+  var aname = (document.querySelector('[data-aname]') || {}).textContent || 'Solomiia';
+  fetch('/os/preferences', { headers: { 'Accept': 'application/json' } })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (!d || !d.assistant_name) return;
+      aname = d.assistant_name;
+      Array.prototype.forEach.call(document.querySelectorAll('[data-aname]'), function (el) {
+        el.textContent = aname;
+      });
+      document.title = 'Tic-tac-toe · ' + aname;
+    })
+    .catch(function () {});
   var board, over, thinking;
   var grid = document.getElementById('grid');
   var statusEl = document.getElementById('status');
@@ -163,7 +182,7 @@ final class TicTacToeAppHandler implements TypedHandlerInterface
     over = true; thinking = false;
     if (res.status === 'draw') { setStatus("It's a draw.", 'draw'); render(); return; }
     if (res.winner === 'X') setStatus('You win! 🎉', 'win');
-    else setStatus('Semi wins this one.', 'lose');
+    else setStatus(escapeHtml(aname) + ' wins this one.', 'lose');
     render(res.line);
   }
 
@@ -175,12 +194,12 @@ final class TicTacToeAppHandler implements TypedHandlerInterface
     render();
     var res = outcome(board);
     if (res.status !== 'continue') { finish(res); return; }
-    semiMove();
+    opponentMove();
   });
 
-  async function semiMove() {
+  async function opponentMove() {
     thinking = true;
-    setStatus('Semi is thinking <span class="dots"><i></i><i></i><i></i></span>', '');
+    setStatus(escapeHtml(aname) + ' is thinking <span class="dots"><i></i><i></i><i></i></span>', '');
     render();
     var data;
     try {
@@ -207,7 +226,7 @@ final class TicTacToeAppHandler implements TypedHandlerInterface
       return;
     }
     var line = 'Your move.';
-    if (data.say) line += ' <span class="ttt__say">Semi: “' + escapeHtml(data.say) + '”</span>';
+    if (data.say) line += ' <span class="ttt__say">' + escapeHtml(aname) + ': “' + escapeHtml(data.say) + '”</span>';
     setStatus(line, '');
     render();
   }

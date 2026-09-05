@@ -11,8 +11,8 @@ use Semitexa\Llm\Domain\Enum\AiRiskLevel;
 
 /**
  * The tic-tac-toe UI-skill: opens a small game board as a dialog (entry route
- * `/os/app/tictactoe`) where the user plays X against Semi (O). Every one of
- * Semi's moves is a real LLM call to the move endpoint — you are genuinely
+ * `/os/app/tictactoe`) where the user plays X against the assistant (O). Every
+ * one of her moves is a real LLM call to the move endpoint — you are genuinely
  * playing against the model, not a canned bot.
  *
  * A leisure skill for Chill mode; the planner routes "let's play tic-tac-toe"
@@ -20,7 +20,7 @@ use Semitexa\Llm\Domain\Enum\AiRiskLevel;
  */
 #[AsAiSkill(
     name: 'tic-tac-toe',
-    summary: 'Play a game of tic-tac-toe against Semi.',
+    summary: 'Play a game of tic-tac-toe against the assistant.',
     useWhen: 'The user wants to play tic-tac-toe / noughts and crosses / X and O, or "зіграти в хрестики-нолики" / "зіграймо в хрестики нолики" — anything asking to play that game.',
     avoidWhen: 'The user wants a different game or is not asking to play anything.',
     riskLevel: AiRiskLevel::Low,
