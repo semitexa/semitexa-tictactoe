@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Semitexa\TicTacToe\Application\Payload\Request;
 
-use Semitexa\Core\Attribute\AsPublicPayload;
+use Semitexa\Authorization\Attribute\AsProtectedPayload;
+use Semitexa\Os\Domain\Contract\OsSurfacePayloadInterface;
 use Semitexa\Core\Contract\ValidatablePayloadInterface;
 use Semitexa\Core\Http\Response\ResourceResponse;
 
@@ -12,14 +13,21 @@ use Semitexa\Core\Http\Response\ResourceResponse;
  * Ask the assistant (the LLM) for her next move. The client sends the current
  * 9-cell board; the handler runs one focused LLM completion and returns her move.
  */
-#[AsPublicPayload(
+/**
+ * Console surface: gated by OsAdminGate, not merely by being signed in.
+ *
+ * This window mounts under /os/app, so a visitor authenticated by the host
+ * site's own login would satisfy #[AsProtectedPayload] exactly as an operator
+ * does. OsSurfacePayloadInterface is what asks the narrower question.
+ */
+#[AsProtectedPayload(
     path: '/os/app/tictactoe/move',
     methods: ['POST'],
     responseWith: ResourceResponse::class,
     consumes: ['application/json'],
     produces: ['application/json'],
 )]
-final class TicTacToeMovePayload implements ValidatablePayloadInterface
+final class TicTacToeMovePayload implements ValidatablePayloadInterface, OsSurfacePayloadInterface
 {
     /** @var list<string> nine cells, each '', 'X' or 'O' */
     private array $board = [];
