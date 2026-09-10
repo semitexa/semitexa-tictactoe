@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Semitexa\TicTacToe\Application\Payload\Request;
 
 use Semitexa\Authorization\Attribute\AsProtectedPayload;
-use Semitexa\Os\Domain\Contract\OsSurfacePayloadInterface;
+use Semitexa\Os\Domain\Contract\OsContentSurfaceInterface;
 use Semitexa\Core\Contract\ValidatablePayloadInterface;
 use Semitexa\Core\Http\Response\ResourceResponse;
 
@@ -18,7 +18,7 @@ use Semitexa\Core\Http\Response\ResourceResponse;
  *
  * This window mounts under /os/app, so a visitor authenticated by the host
  * site's own login would satisfy #[AsProtectedPayload] exactly as an operator
- * does. OsSurfacePayloadInterface is what asks the narrower question.
+ * does. OsContentSurfaceInterface is what asks the narrower question.
  */
 #[AsProtectedPayload(
     path: '/os/app/tictactoe/move',
@@ -27,7 +27,7 @@ use Semitexa\Core\Http\Response\ResourceResponse;
     consumes: ['application/json'],
     produces: ['application/json'],
 )]
-final class TicTacToeMovePayload implements ValidatablePayloadInterface, OsSurfacePayloadInterface
+final class TicTacToeMovePayload implements ValidatablePayloadInterface, OsContentSurfaceInterface
 {
     /** @var list<string> nine cells, each '', 'X' or 'O' */
     private array $board = [];
