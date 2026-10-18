@@ -14,11 +14,14 @@
       document.title = 'Tic-tac-toe · ' + aname;
     })
     .catch(function () {});
-  var board, over, thinking;
+  // gameId tags every opponent request: "New game" during a slow answer must
+  // not let the old game's move (or its result) land on the fresh board.
+  var board, over, thinking, gameId = 0;
   var grid = document.getElementById('grid');
   var statusEl = document.getElementById('status');
 
   function reset() {
+    gameId++;
     board = ['', '', '', '', '', '', '', '', ''];
     over = false; thinking = false;
     setStatus('Your move — you are <b style="color:var(--x);margin:0 3px">X</b>', '');
@@ -75,6 +78,7 @@
   });
 
   async function opponentMove() {
+    var myGame = gameId;
     thinking = true;
     setStatus(escapeHtml(aname) + ' is thinking <span class="dots"><i></i><i></i><i></i></span>', '');
     render();
@@ -88,6 +92,7 @@
       data = await r.json();
     } catch (err) { data = null; }
 
+    if (myGame !== gameId) return;
     thinking = false;
     if (!data || typeof data.move !== 'number') {
       // Extreme fallback: pick a legal cell locally so the game never stalls.
