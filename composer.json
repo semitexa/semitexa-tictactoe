@@ -15,6 +15,7 @@
         "semitexa/llm": "*",
         "semitexa/prompt": "*",
         "semitexa/os": "*",
+        "semitexa/ssr": "*",
         "semitexa/authorization": "*"
     },
     "autoload": {

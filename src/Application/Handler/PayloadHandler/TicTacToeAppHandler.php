@@ -8,6 +8,7 @@ use Semitexa\Core\Attribute\AsPayloadHandler;
 use Semitexa\Core\Contract\TypedHandlerInterface;
 use Semitexa\Core\Http\CspNonce;
 use Semitexa\Core\Http\Response\ResourceResponse;
+use Semitexa\Ssr\Application\Service\Asset\AssetManager;
 use Semitexa\TicTacToe\Application\Payload\Request\TicTacToeAppPayload;
 
 /**
@@ -87,27 +88,7 @@ final class TicTacToeAppHandler implements TypedHandlerInterface
   :root{--win:#34d399;--lose:#ff6b82}
   :root[data-mode=light]{color-scheme:light;--text:#1d2a38;--muted:#55677e;--page:#f4f7fb;--panel:#ffffff;
     --line:rgba(100,116,139,.28);--accent:#7c5cd6;--accent-soft:rgba(124,92,214,.14);--x:#1e7fb8;--o:#7c5cd6;--win:#0e8a72;--lose:#c2314b}
-</style><script>
-/* Follow the OS theme: pref lives server-side; 'auto' resolves with the shell's
-   exact rule (prefers-color-scheme, else dark 19:00-07:00). Self-resolution
-   works in web iframes AND OS-mode native windows. */
-(function(){
-  function applyMode(mode){
-    var eff=(mode==='light'||mode==='dark')?mode:(function(){
-      try{ if(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark'; }catch(e){}
-      var h=new Date().getHours(); return (h>=19||h<7)?'dark':'light';
-    })();
-    var el=document.documentElement;
-    if(el.getAttribute('data-mode')!==eff){ el.setAttribute('data-mode',eff); el.style.colorScheme=eff; }
-  }
-  function syncMode(){
-    fetch('/os/preferences',{headers:{'Accept':'application/json'}})
-      .then(function(r){return r.json();}).then(function(d){ applyMode((d&&d.theme_mode)||'auto'); })
-      .catch(function(){});
-  }
-  syncMode(); window.addEventListener('focus', syncMode); setInterval(syncMode, 15000);
-})();
-</script>
+</style><script src="__THEME_SYNC_JS__"></script>
 </head>
 <body>
   <div class="ttt">
@@ -121,129 +102,16 @@ final class TicTacToeAppHandler implements TypedHandlerInterface
       <span class="ttt__hint"><span data-aname>Solomiia</span> (O) thinks with the model — a move can take a moment.</span>
     </div>
   </div>
-<script>
-(function () {
-  var MOVE_URL = '/os/app/tictactoe/move';
-  // The operator may have renamed her; the shell's own preferences endpoint is
-  // the only place that knows. Until it answers, the markup's fallback stands.
-  var aname = (document.querySelector('[data-aname]') || {}).textContent || 'Solomiia';
-  fetch('/os/preferences', { headers: { 'Accept': 'application/json' } })
-    .then(function (r) { return r.json(); })
-    .then(function (d) {
-      if (!d || !d.assistant_name) return;
-      aname = d.assistant_name;
-      Array.prototype.forEach.call(document.querySelectorAll('[data-aname]'), function (el) {
-        el.textContent = aname;
-      });
-      document.title = 'Tic-tac-toe · ' + aname;
-    })
-    .catch(function () {});
-  var board, over, thinking;
-  var grid = document.getElementById('grid');
-  var statusEl = document.getElementById('status');
-
-  function reset() {
-    board = ['', '', '', '', '', '', '', '', ''];
-    over = false; thinking = false;
-    setStatus('Your move — you are <b style="color:var(--x);margin:0 3px">X</b>', '');
-    render();
-  }
-
-  function setStatus(html, cls) {
-    statusEl.className = 'ttt__status' + (cls ? ' ' + cls : '');
-    statusEl.innerHTML = html;
-  }
-
-  function render(winLine) {
-    grid.className = 'ttt__grid' + (thinking ? ' thinking' : '');
-    grid.innerHTML = '';
-    for (var i = 0; i < 9; i++) {
-      var v = board[i];
-      var b = document.createElement('button');
-      b.className = 'ttt__cell' + (v ? ' filled ' + v.toLowerCase() : '') +
-        (winLine && winLine.indexOf(i) !== -1 ? ' win' : '');
-      b.textContent = v;
-      b.disabled = !!v || over || thinking;
-      b.dataset.i = i;
-      grid.appendChild(b);
-    }
-  }
-
-  var LINES = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-  function outcome(bd) {
-    for (var k = 0; k < LINES.length; k++) {
-      var l = LINES[k];
-      if (bd[l[0]] && bd[l[0]] === bd[l[1]] && bd[l[1]] === bd[l[2]]) return { status: 'win', winner: bd[l[0]], line: l };
-    }
-    for (var i = 0; i < 9; i++) if (!bd[i]) return { status: 'continue' };
-    return { status: 'draw' };
-  }
-
-  function finish(res) {
-    over = true; thinking = false;
-    if (res.status === 'draw') { setStatus("It's a draw.", 'draw'); render(); return; }
-    if (res.winner === 'X') setStatus('You win! 🎉', 'win');
-    else setStatus(escapeHtml(aname) + ' wins this one.', 'lose');
-    render(res.line);
-  }
-
-  grid.addEventListener('click', function (e) {
-    var cell = e.target.closest('.ttt__cell'); if (!cell) return;
-    var i = +cell.dataset.i;
-    if (over || thinking || board[i]) return;
-    board[i] = 'X';
-    render();
-    var res = outcome(board);
-    if (res.status !== 'continue') { finish(res); return; }
-    opponentMove();
-  });
-
-  async function opponentMove() {
-    thinking = true;
-    setStatus(escapeHtml(aname) + ' is thinking <span class="dots"><i></i><i></i><i></i></span>', '');
-    render();
-    var data;
-    try {
-      var r = await fetch(MOVE_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify({ board: board })
-      });
-      data = await r.json();
-    } catch (err) { data = null; }
-
-    thinking = false;
-    if (!data || typeof data.move !== 'number') {
-      // Extreme fallback: pick a legal cell locally so the game never stalls.
-      var free = []; for (var i = 0; i < 9; i++) if (!board[i]) free.push(i);
-      if (!free.length) { finish(outcome(board)); return; }
-      data = { move: free[0], say: '', result: null };
-    }
-    board[data.move] = 'O';
-    var res = (data.result && data.result.status) ? data.result : outcome(board);
-    if (res.status !== 'continue') {
-      finish(res);
-      if (data.say) statusEl.innerHTML += ' <span class="ttt__say">“' + escapeHtml(data.say) + '”</span>';
-      return;
-    }
-    var line = 'Your move.';
-    if (data.say) line += ' <span class="ttt__say">' + escapeHtml(aname) + ': “' + escapeHtml(data.say) + '”</span>';
-    setStatus(line, '');
-    render();
-  }
-
-  function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, function (c) {
-      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-    });
-  }
-
-  document.getElementById('new').addEventListener('click', reset);
-  reset();
-})();
-</script>
+<script src="__TICTACTOE_APP_JS__"></script>
 </body></html>
 HTML;
+
+        // The page's scripts are static assets (fingerprinted, cached immutable);
+        // nothing executable is left inline.
+        $html = strtr($html, [
+            '__THEME_SYNC_JS__' => AssetManager::getUrl('js/app-theme-sync.js', 'os'),
+            '__TICTACTOE_APP_JS__' => AssetManager::getUrl('js/tictactoe-app.js', 'tictactoe'),
+        ]);
 
         return $resource
             ->setContent(CspNonce::stamp($html))
