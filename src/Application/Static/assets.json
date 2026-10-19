@@ -1,0 +1,8 @@
+{
+    "$schema": "semitexa://asset-manifest/v2",
+    "module": "tictactoe",
+    "include": {
+        "css": [],
+        "js": []
+    }
+}
