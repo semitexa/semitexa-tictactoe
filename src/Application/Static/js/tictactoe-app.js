@@ -1,5 +1,8 @@
 (function () {
   var MOVE_URL = '/os/app/tictactoe/move';
+  // The double-submit CSRF token (the readable XSRF-TOKEN cookie), echoed as
+  // X-CSRF-Token: without it a signed-in POST was answered 403.
+  function csrfToken(){var m=document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]*)/);return m?decodeURIComponent(m[1]):'';}
   // The operator may have renamed her; the shell's own preferences endpoint is
   // the only place that knows. Until it answers, the markup's fallback stands.
   var aname = (document.querySelector('[data-aname]') || {}).textContent || 'Solomiia';
@@ -86,7 +89,7 @@
     try {
       var r = await fetch(MOVE_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-Token': csrfToken() },
         body: JSON.stringify({ board: board })
       });
       data = await r.json();
